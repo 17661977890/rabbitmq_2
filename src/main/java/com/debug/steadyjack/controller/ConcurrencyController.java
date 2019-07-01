@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by Administrator on 2018/8/25.
+ * 模拟高并发，处理抢单请求
  */
 @RestController
 public class ConcurrencyController {

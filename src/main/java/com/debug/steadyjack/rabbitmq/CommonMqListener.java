@@ -12,7 +12,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 /**
- * 单一消费者监听案例
+ * 单一消费者监听案例(并发量不高的场景使用-----商城抢单、秒杀活动不适用)
  */
 @Component
 public class CommonMqListener {

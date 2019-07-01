@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by steadyjack on 2018/8/20.
+ * 在 RabbitMQ 中，消息确认处理机制有三种：Auto - 自动、Manual - 手动、None - 无需确认，而确认机制需要 listener 实现 ChannelAwareMessageListener 接口，并重写其中的确认消费逻辑
  */
 @Configuration
 public class RabbitmqConfig {
@@ -173,7 +173,6 @@ public class RabbitmqConfig {
     @Autowired
     private SimpleListener simpleListener;
 
-
     @Bean(name = "simpleContainer")
     public SimpleMessageListenerContainer simpleContainer(@Qualifier("simpleQueue") Queue simpleQueue){
         SimpleMessageListenerContainer container=new SimpleMessageListenerContainer();
@@ -185,7 +184,7 @@ public class RabbitmqConfig {
         container.setMaxConcurrentConsumers(env.getProperty("spring.rabbitmq.listener.max-concurrency",Integer.class));
         container.setPrefetchCount(env.getProperty("spring.rabbitmq.listener.prefetch",Integer.class));
 
-        //TODO：消息确认-确认机制种类
+        //TODO：消息确认-确认机制种类（手动）
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         container.setQueues(simpleQueue);
         container.setMessageListener(simpleListener);
@@ -214,7 +213,13 @@ public class RabbitmqConfig {
 
     @Autowired
     private UserOrderListener userOrderListener;
-
+    /**
+     * SimpleMessageListenerContainer 即简单消息监听容器：这个类非常的强大，我们可以对他进行很多的设置，用对于消费者的配置项
+     *
+     * 这里我们构建SimpleMessageListenerContainer来消费消息，代替 @RabbitListener
+     * @param
+     * @return
+     */
     @Bean
     public SimpleMessageListenerContainer listenerContainerUserOrder(@Qualifier("userOrderQueue") Queue userOrderQueue){
         SimpleMessageListenerContainer container=new SimpleMessageListenerContainer();
@@ -222,13 +227,20 @@ public class RabbitmqConfig {
         container.setMessageConverter(new Jackson2JsonMessageConverter());
 
         //TODO：并发配置
+        //  这个listener在这里配置了10 个 consumer 实例的配置，每个 consumer 可以预监听消费拉取的消息数量为 5 个，（如果同一时间处理不完，会将其缓存在 mq 的客户端等待处理！）
+        //并发消费者的初始化值
         container.setConcurrentConsumers(env.getProperty("spring.rabbitmq.listener.concurrency",Integer.class));
+        //并发消费者的最大值
         container.setMaxConcurrentConsumers(env.getProperty("spring.rabbitmq.listener.max-concurrency",Integer.class));
+        //每个 consumer 可以预监听消费拉取的消息数量
         container.setPrefetchCount(env.getProperty("spring.rabbitmq.listener.prefetch",Integer.class));
 
-        //TODO:消息确认机制
+        //TODO:消息确认机制（手动）
+        //监听的队列
         container.setQueues(userOrderQueue);
+        //消费信息（后置的业务逻辑）-----
         container.setMessageListener(userOrderListener);
+        //签收模式（确认机制）
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
 
         return container;

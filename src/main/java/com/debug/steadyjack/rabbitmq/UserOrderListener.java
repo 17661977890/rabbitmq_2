@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Created by Administrator on 2018/8/30.
+ * 消费消息的逻辑：
+ * 手动确认机制：
+ * 确认机制需要 listener 实现 ChannelAwareMessageListener 接口，并重写其中的确认消费逻辑（消息消费后的---业务逻辑）
  */
 @Component("userOrderListener")
 public class UserOrderListener implements ChannelAwareMessageListener{

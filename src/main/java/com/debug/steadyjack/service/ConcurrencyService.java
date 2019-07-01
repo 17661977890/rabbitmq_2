@@ -26,7 +26,7 @@ public class ConcurrencyService {
     private ProductRobbingRecordMapper productRobbingRecordMapper;
 
     /**
-     * 处理抢单
+     * 处理抢单：有库存 扣减库存  异步发送通知用户抢单成功
      * @param mobile
      */
     public void manageRobbing(String mobile){
@@ -46,14 +46,18 @@ public class ConcurrencyService {
 
         //+v2.0
         try {
+            //查有没有库存
             Product product=productMapper.selectByProductNo(ProductNo);
             if (product!=null && product.getTotal()>0){
+                //有库存，扣减库存-1
                 int result=productMapper.updateTotal(product);
                 if (result>0) {
                     ProductRobbingRecord entity=new ProductRobbingRecord();
                     entity.setMobile(mobile);
                     entity.setProductId(product.getId());
+                    //抢单成功+1
                     productRobbingRecordMapper.insertSelective(entity);
+                    //todo 异步通知用户抢单成功（发送短信等）
                 }
             }
         }catch (Exception e){
